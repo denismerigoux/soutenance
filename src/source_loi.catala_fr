@@ -1,0 +1,96 @@
+## Arrêté du 25 mai 2016 fixant le cadre national de la formation et les modalités conduisant à la délivrance du diplôme national de doctorat
+
+
+> Début métadonnées
+```catala
+déclaration énumération Sexe :
+  -- Femme
+  -- Homme
+
+déclaration structure MembreDuJury :
+  donnée id contenu entier
+  donnée professeur contenu booléen
+  donnée sexe contenu Sexe
+  donnée président contenu booléen
+  donnée externe contenu booléen
+
+déclaration champ d'application ValidationJury :
+  contexte membres contenu collection MembreDuJury
+  contexte parité_minimale_représentation_équilibrée contenu décimal
+  contexte nombre_membres_ok condition
+  contexte parité_ok condition
+  contexte professeurs_ok condition
+  contexte président_ok condition
+  contexte externes_ok condition
+```
+>Fin métadonnées
+
+### [Article 18]
+
+Le jury de thèse est désigné par le chef d'établissement après avis du directeur
+de l'école doctorale et du directeur de thèse. Le nombre des membres du
+jury est compris entre quatre et huit.
+
+```catala
+champ d'application ValidationJury :
+  règle nombre_membres_ok sous condition
+    nombre de  membres >= 4 et nombre de membres <= 8
+  conséquence rempli
+```
+
+Il est composé au moins pour moitié
+de personnalités françaises ou étrangères, extérieures à l'école doctorale
+et à l'établissement d'inscription du doctorant et choisies en raison de
+leur compétence scientifique ou professionnelle dans le champ de recherche
+concerné, sous réserve des dispositions relatives à la cotutelle internationale
+de thèse définies au titre III du présent arrêté.
+
+```catala
+champ d'application ValidationJury :
+  règle externes_ok sous condition
+    nombre pour membre dans membres de membre.externe >= nombre de membres / 2
+  conséquence rempli
+```
+
+Sa composition doit permettre une représentation équilibrée des femmes et
+des hommes.
+
+```catala
+champ d'application ValidationJury :
+  règle externes_ok sous condition
+    entier_vers_décimal de (nombre pour membre dans membres de (membre.sexe sous forme Femme)) >=.
+      entier_vers_décimal de (nombre de membres) *. parité_minimale_représentation_équilibrée
+  conséquence rempli
+```
+
+
+La moitié du jury au moins doit être composée de professeurs ou
+personnels assimilés au sens de l'article 6 du décret n° 92-70 relatif au
+Conseil national des universités et de l'article 5 du décret n° 87-31 pour
+les disciplines de santé, ou d'enseignants de rang équivalent qui ne relèvent
+pas du ministère chargé de l'enseignement supérieur.
+
+```catala
+champ d'application ValidationJury :
+  règle externes_ok sous condition
+    nombre pour membre dans membres de membre.professeur >= nombre de membres / 2
+  conséquence rempli
+```
+
+Les membres du jury désignent parmi eux un président et, le cas échéant,
+un rapporteur de soutenance. Le président doit être un professeur ou
+assimilé ou un enseignant de rang équivalent.
+
+```catala
+champ d'application ValidationJury :
+  règle président_ok sous condition
+    (nombre pour membre dans membres de membre.président = 1) et
+    (pour tout membre dans (filtre pour membre dans membres de membre.président) on a membre.professeur)
+  conséquence rempli
+```
+
+Le directeur de thèse participe au jury, mais ne prend pas part à la décision.
+Lorsque plusieurs établissements sont accrédités à délivrer conjointement le
+doctorat, le jury est désigné par les chefs des établissements concernés dans
+les conditions fixées par la convention mentionnée à l'article 5 du présent
+arrêté.
