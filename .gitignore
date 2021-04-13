@@ -1,1 +1,8 @@
 _build/
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+_minted*
+src/*.tex

@@ -59,7 +59,8 @@ des hommes.
 ```catala
 champ d'application ValidationJury :
   définition ratio_femmes_hommes égal à
-    entier_vers_décimal de (nombre pour membre dans membres de (membre.sexe sous forme Femme)) /.
+    entier_vers_décimal de (nombre pour membre dans membres de
+      (membre.sexe sous forme Femme)) /.
      entier_vers_décimal de (nombre de membres)
 
   règle parité_ok sous condition
@@ -78,7 +79,8 @@ pas du ministère chargé de l'enseignement supérieur.
 ```catala
 champ d'application ValidationJury :
   règle professeurs_ok sous condition
-    nombre pour membre dans membres de membre.professeur * 2 >= nombre de membres
+    nombre pour membre dans membres de membre.professeur * 2 >=
+      nombre de membres
   conséquence rempli
 ```
 
@@ -90,7 +92,9 @@ assimilé ou un enseignant de rang équivalent.
 champ d'application ValidationJury :
   règle président_ok sous condition
     (nombre pour membre dans membres de membre.président = 1) et
-    (pour tout membre dans (filtre pour membre dans membres de membre.président) on a membre.professeur)
+    (pour tout membre dans
+      (filtre pour membre dans membres de membre.président) on a
+        membre.professeur)
   conséquence rempli
 ```
 
@@ -103,6 +107,7 @@ arrêté.
 ```catala
 champ d'application ValidationJury:
   règle tout_ok sous condition
-    nombre_membres_ok et parité_ok et président_ok et externes_ok et professeurs_ok
+    nombre_membres_ok et parité_ok et président_ok et
+    externes_ok et professeurs_ok
   conséquence rempli
 ```

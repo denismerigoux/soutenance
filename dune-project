@@ -1,4 +1,4 @@
-(lang dune 2.8)
+(lang dune 2.3)
 
 (name soutenance)
 (version 1.0.0)

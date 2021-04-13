@@ -9,3 +9,14 @@ build: src/source_loi.ml format
 
 test: build
 	dune exec src/soutenance.exe -- tests/jury.md -p 0.3
+
+INSTALL_DIR=dist
+
+explain:
+	catala --wrap --language=fr LaTeX src/source_loi.catala_fr
+	latexmk -pdf -halt-on-error -shell-escape src/source_loi.tex
+
+install:
+	dune build --profile=release src/soutenance.bc.js
+	mkdir -p $(INSTALL_DIR)
+	cp _build/default/src/soutenance.bc.js $(INSTALL_DIR)/soutenance.js
