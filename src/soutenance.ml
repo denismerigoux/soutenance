@@ -29,6 +29,11 @@ let membre_jury_ast_to_source (m : Ast.membre_jury) : Source_loi.membre_du_jury 
     professeur = List.exists (fun attr -> attr = Ast.Professeur) m.attributs;
     president = List.exists (fun attr -> attr = Ast.President) m.attributs;
     externe = List.exists (fun attr -> attr = Ast.Externe) m.attributs;
+    rapporteur = List.exists (fun attr -> attr = Ast.Rapporteur) m.attributs;
+    habilitation_a_diriger_recherches =
+      List.exists (fun attr -> attr = Ast.Habilitation) m.attributs;
+    directeur_de_these = List.exists (fun attr -> attr = Ast.Directeur) m.attributs;
+    hors_monde_universitaire = List.exists (fun attr -> attr = Ast.NonUniversitaire) m.attributs;
     sexe =
       (match
          List.fold_left
@@ -39,7 +44,8 @@ let membre_jury_ast_to_source (m : Ast.membre_jury) : Source_loi.membre_du_jury 
       | None -> Cli.raise_error (Format.asprintf "Sexe inconnu pour le membre du jury: %s" m.nom));
   }
 
-let driver (parite_minimale : float option) (file : string) : int =
+let driver (impossible_rapporteurs_externes : bool) (parite_minimale : float option) (file : string)
+    : int =
   try
     let oc = try open_in file with Sys_error msg -> Cli.raise_error msg in
     let lexbuf = Sedlexing.Utf8.from_channel oc in
@@ -77,13 +83,19 @@ let driver (parite_minimale : float option) (file : string) : int =
           Source_loi.membres_in = (fun _ -> Array.of_list members);
           Source_loi.parite_minimale_representation_equilibree_in =
             (fun _ -> Runtime.decimal_of_float parite_minimale);
+          Source_loi.impossible_trouver_rapporteurs_externes_in =
+            (fun _ -> impossible_rapporteurs_externes);
           Source_loi.nombre_membres_ok_in = (fun _ -> raise Runtime.EmptyError);
           Source_loi.parite_ok_in = (fun _ -> raise Runtime.EmptyError);
           Source_loi.president_ok_in = (fun _ -> raise Runtime.EmptyError);
           Source_loi.ratio_femmes_hommes_in = (fun _ -> raise Runtime.EmptyError);
           Source_loi.externes_ok_in = (fun _ -> raise Runtime.EmptyError);
           Source_loi.professeurs_ok_in = (fun _ -> raise Runtime.EmptyError);
+          Source_loi.directeurs_ok_in = (fun _ -> raise Runtime.EmptyError);
+          Source_loi.rapporteurs_nombre_ok_in = (fun _ -> raise Runtime.EmptyError);
+          Source_loi.rapporteurs_externes_ok_in = (fun _ -> raise Runtime.EmptyError);
           Source_loi.tout_ok_in = (fun _ -> raise Runtime.EmptyError);
+          Source_loi.codirection_hors_universitaire_in = (fun _ -> raise Runtime.EmptyError);
         }
     in
     if out.Source_loi.tout_ok_out then begin
@@ -102,7 +114,6 @@ let driver (parite_minimale : float option) (file : string) : int =
              "Le nombre de membres du jury de thèse est trop petit ou trop grand (%d pour \
               l'instant, doit être entre 4 et 8)"
              (List.length members));
-
       if not out.Source_loi.parite_ok_out then
         Cli.error_print
           (Format.asprintf
@@ -121,6 +132,16 @@ let driver (parite_minimale : float option) (file : string) : int =
              (ratio_externes *. 100.));
       if not out.Source_loi.president_ok_out then
         Cli.error_print "Le jury de thèse doit être présidé par un professeur";
+      if not out.Source_loi.directeurs_ok_out then
+        Cli.error_print
+          "Les directeurs de thèse doivent être habilités à diriger les recherches, et être \
+           entre un et deux sauf si un troisième ne vient pas du monde universitaire";
+      if not out.Source_loi.rapporteurs_nombre_ok_out then
+        Cli.error_print
+          "Les rapporteurs de thèse doivent être habilités à diriger les recherche, et être \
+           au nombre de deux sauf si un troisième ne vient pas du monde universitaire";
+      if not out.Source_loi.rapporteurs_externes_ok_out then
+        Cli.error_print "Sauf impossibilité, les rapporteurs doivent être externes";
       -1
     end
   with Cli.Error (msg, pos) ->

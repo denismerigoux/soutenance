@@ -12,19 +12,178 @@ déclaration structure MembreDuJury :
   donnée sexe contenu Sexe
   donnée président contenu booléen
   donnée externe contenu booléen
+  donnée habilitation_à_diriger_recherches contenu booléen
+  donnée hors_monde_universitaire contenu booléen
+  donnée rapporteur contenu booléen
+  donnée directeur_de_thèse contenu booléen
 
 déclaration champ d'application ValidationJury :
   contexte membres contenu collection MembreDuJury
   contexte parité_minimale_représentation_équilibrée contenu décimal
+  contexte codirection_hors_universitaire condition
+  contexte impossible_trouver_rapporteurs_externes condition
   contexte ratio_femmes_hommes contenu décimal
   contexte nombre_membres_ok condition
   contexte parité_ok condition
   contexte professeurs_ok condition
   contexte président_ok condition
   contexte externes_ok condition
+  contexte directeurs_ok condition
+  contexte rapporteurs_nombre_ok condition
+  contexte rapporteurs_externes_ok condition
   contexte tout_ok condition
+
+champ d'application ValidationJury:
+  règle tout_ok sous condition
+    nombre_membres_ok et parité_ok et président_ok et
+    externes_ok et professeurs_ok et directeurs_ok et
+    rapporteurs_nombre_ok et rapporteurs_externes_ok
+  conséquence rempli
 ```
 >Fin métadonnées
+
+## [Article 16]
+
+Le doctorant est placé sous le contrôle et la responsabilité d'un directeur de
+thèse. La direction scientifique du projet doctoral peut être éventuellement
+assurée conjointement avec un codirecteur.
+
+```catala
+champ d'application ValidationJury :
+  règle directeurs_ok sous condition
+    nombre de (filtre pour membre dans membres de
+      membre.directeur_de_thèse) = 1 et
+    nombre de (filtre pour membre dans membres de
+      (membre.directeur_de_thèse et
+        membre.habilitation_à_diriger_recherches)) = 1
+  conséquence rempli
+
+  règle directeurs_ok sous condition
+    nombre de (filtre pour membre dans membres de
+      membre.directeur_de_thèse) = 2 et
+    nombre de (filtre pour membre dans membres de
+      (membre.directeur_de_thèse et
+        membre.habilitation_à_diriger_recherches)) = 2
+  conséquence rempli
+```
+
+Lorsque la codirection est assurée
+par une personne du monde socio-économique qui n'appartient pas au monde
+universitaire, le nombre de codirecteurs peut être porté à deux.
+
+```catala
+champ d'application ValidationJury :
+  règle codirection_hors_universitaire sous condition
+    nombre de (filtre pour membre dans membres de
+      membre.directeur_de_thèse) = 3 et
+    nombre de (filtre pour membre dans membres de
+      (membre.directeur_de_thèse et membre.hors_monde_universitaire)) = 1 et
+    nombre de (filtre pour membre dans membres de
+      (membre.directeur_de_thèse et
+        membre.habilitation_à_diriger_recherches)) = 2
+  conséquence rempli
+
+  règle directeurs_ok sous condition codirection_hors_universitaire
+  conséquence rempli
+```
+
+Les fonctions de directeur ou de codirecteur de thèse peuvent être exercées :
+
+1° Par les professeurs et personnels assimilés au sens de l'article 6 du
+décret n° 92-70 relatif au Conseil national des universités et de l'article
+5 du décret n° 87-31 pour les disciplines de santé, ou par des enseignants
+de rang équivalent qui ne relèvent pas du ministère de l'enseignement supérieur,
+par les personnels des établissements d'enseignement supérieur, des organismes
+publics de recherche et des fondations de recherche, titulaires d'une
+habilitation à diriger des recherches ;
+
+2° Par d'autres personnalités, titulaires d'un doctorat, choisies en raison
+de leur compétence scientifique par le chef d'établissement, sur proposition
+du directeur de l'école doctorale et après avis de la commission de la recherche
+du conseil académique ou de l'instance en tenant lieu dans l'établissement
+d'inscription.
+
+La direction de la thèse peut également être assurée sous forme de codirection
+instaurée par convention entre un ou deux directeurs de thèse répondant aux
+conditions fixées ci-dessus et une personne du monde socio-économique reconnue
+pour ses compétences dans le domaine. La proposition de codirection est
+soumise à la décision du chef de l'établissement accrédité, sur proposition du
+directeur de l'école doctorale. Dans ce cas, les doctorants sont placés sous
+la responsabilité conjointe des codirecteurs de thèse.
+
+Le conseil de l'école doctorale fixe le nombre maximum de doctorants
+encadrés par un directeur de thèse en tenant compte des contraintes
+liées aux disciplines, notamment les disciplines rares.
+
+## [Article 17]
+
+L'autorisation de soutenir une thèse est accordée par le chef d'établissement,
+après avis du directeur de l'école doctorale, sur proposition du directeur de
+thèse.
+
+Les travaux du doctorant sont préalablement examinés par au moins deux
+rapporteurs désignés par le chef d'établissement, habilités à diriger des
+recherches ou appartenant à l'une des catégories mentionnées au 1° et au 2°
+de l'article 16 du présent arrêté, sur proposition du directeur de l'école
+doctorale, après avis du directeur de thèse.
+
+```catala
+champ d'application ValidationJury :
+  règle rapporteurs_nombre_ok sous condition
+    nombre de (filtre pour membre dans membres de membre.rapporteur) = 2 et
+    nombre de (filtre pour membre dans membres de (membre.rapporteur et
+      membre.habilitation_à_diriger_recherches)) = 2
+  conséquence rempli
+```
+
+Dans le cas de travaux impliquant des personnes du monde socio-économique qui
+n'appartiennent pas au monde universitaire, un troisième rapporteur, reconnu
+pour ses compétences dans le domaine, peut être désigné sur proposition du
+directeur de l'école doctorale, après avis du directeur de thèse.
+
+```catala
+champ d'application ValidationJury :
+  règle rapporteurs_nombre_ok sous condition
+    codirection_hors_universitaire et
+    nombre de (filtre pour membre dans membres de membre.rapporteur) = 3 et
+    nombre de (filtre pour membre dans membres de (membre.rapporteur et
+      membre.habilitation_à_diriger_recherches)) = 2 et
+    nombre de (filtre pour membre dans membres de (membre.rapporteur et
+      membre.hors_monde_universitaire)) = 1
+  conséquence rempli
+```
+
+Sauf si le champ disciplinaire ou le contenu des travaux ne le permettent pas,
+les deux rapporteurs sont extérieurs à l'école doctorale et à l'établissement
+du doctorant. Ils peuvent appartenir à des établissements d'enseignement
+supérieur ou de recherche étrangers ou à d'autres organismes étrangers.
+
+```catala
+champ d'application ValidationJury :
+  règle rapporteurs_externes_ok sous condition
+    impossible_trouver_rapporteurs_externes
+  conséquence rempli
+
+  règle rapporteurs_externes_ok sous condition
+    nombre de (filtre pour membre dans membres de membre.rapporteur) = 2 et
+    nombre de (filtre pour membre dans membres de
+      (membre.rapporteur et membre.externe)) = 2
+  conséquence rempli
+
+  règle rapporteurs_externes_ok sous condition
+    codirection_hors_universitaire et
+    nombre de (filtre pour membre dans membres de
+      (membre.rapporteur et membre.habilitation_à_diriger_recherches et
+        membre.externe)) = 2
+  conséquence rempli
+```
+
+Les rapporteurs n'ont pas d'implication dans le travail du doctorant.
+
+Les rapporteurs font connaître, au moins quatorze jours avant la date prévue
+pour la soutenance, leur avis par des rapports écrits ; sur cette base, le
+chef d'établissement autorise la soutenance. Ces rapports sont communiqués
+au jury et au doctorant avant la soutenance.
 
 ### [Article 18]
 
@@ -103,11 +262,3 @@ Lorsque plusieurs établissements sont accrédités à délivrer conjointement l
 doctorat, le jury est désigné par les chefs des établissements concernés dans
 les conditions fixées par la convention mentionnée à l'article 5 du présent
 arrêté.
-
-```catala
-champ d'application ValidationJury:
-  règle tout_ok sous condition
-    nombre_membres_ok et parité_ok et président_ok et
-    externes_ok et professeurs_ok
-  conséquence rempli
-```

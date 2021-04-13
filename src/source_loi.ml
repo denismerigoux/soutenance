@@ -12,29 +12,43 @@ type membre_du_jury = {
   sexe : sexe;
   president : bool;
   externe : bool;
+  habilitation_a_diriger_recherches : bool;
+  hors_monde_universitaire : bool;
+  rapporteur : bool;
+  directeur_de_these : bool;
 }
 
 type validation_jury_out = {
   membres_out : membre_du_jury array;
   parite_minimale_representation_equilibree_out : decimal;
+  codirection_hors_universitaire_out : bool;
+  impossible_trouver_rapporteurs_externes_out : bool;
   ratio_femmes_hommes_out : decimal;
   nombre_membres_ok_out : bool;
   parite_ok_out : bool;
   professeurs_ok_out : bool;
   president_ok_out : bool;
   externes_ok_out : bool;
+  directeurs_ok_out : bool;
+  rapporteurs_nombre_ok_out : bool;
+  rapporteurs_externes_ok_out : bool;
   tout_ok_out : bool;
 }
 
 type validation_jury_in = {
   membres_in : unit -> membre_du_jury array;
   parite_minimale_representation_equilibree_in : unit -> decimal;
+  codirection_hors_universitaire_in : unit -> bool;
+  impossible_trouver_rapporteurs_externes_in : unit -> bool;
   ratio_femmes_hommes_in : unit -> decimal;
   nombre_membres_ok_in : unit -> bool;
   parite_ok_in : unit -> bool;
   professeurs_ok_in : unit -> bool;
   president_ok_in : unit -> bool;
   externes_ok_in : unit -> bool;
+  directeurs_ok_in : unit -> bool;
+  rapporteurs_nombre_ok_in : unit -> bool;
+  rapporteurs_externes_ok_in : unit -> bool;
   tout_ok_in : unit -> bool;
 }
 
@@ -43,18 +57,31 @@ let validation_jury (validation_jury_in : validation_jury_in) =
   let parite_minimale_representation_equilibree_ : unit -> decimal =
     validation_jury_in.parite_minimale_representation_equilibree_in
   in
+  let codirection_hors_universitaire_ : unit -> bool =
+    validation_jury_in.codirection_hors_universitaire_in
+  in
+  let impossible_trouver_rapporteurs_externes_ : unit -> bool =
+    validation_jury_in.impossible_trouver_rapporteurs_externes_in
+  in
   let ratio_femmes_hommes_ : unit -> decimal = validation_jury_in.ratio_femmes_hommes_in in
   let nombre_membres_ok_ : unit -> bool = validation_jury_in.nombre_membres_ok_in in
   let parite_ok_ : unit -> bool = validation_jury_in.parite_ok_in in
   let professeurs_ok_ : unit -> bool = validation_jury_in.professeurs_ok_in in
   let president_ok_ : unit -> bool = validation_jury_in.president_ok_in in
   let externes_ok_ : unit -> bool = validation_jury_in.externes_ok_in in
+  let directeurs_ok_ : unit -> bool = validation_jury_in.directeurs_ok_in in
+  let rapporteurs_nombre_ok_ : unit -> bool = validation_jury_in.rapporteurs_nombre_ok_in in
+  let rapporteurs_externes_ok_ : unit -> bool = validation_jury_in.rapporteurs_externes_ok_in in
   let tout_ok_ : unit -> bool = validation_jury_in.tout_ok_in in
   let membres_ : membre_du_jury array =
     try membres_ () with EmptyError -> raise NoValueProvided
   in
   let parite_minimale_representation_equilibree_ : decimal =
     try parite_minimale_representation_equilibree_ () with EmptyError -> raise NoValueProvided
+  in
+  let impossible_trouver_rapporteurs_externes_ : bool =
+    try try impossible_trouver_rapporteurs_externes_ () with EmptyError -> false
+    with EmptyError -> raise NoValueProvided
   in
   let externes_ok_ : bool =
     try
@@ -137,6 +164,31 @@ let validation_jury (validation_jury_in : validation_jury_in) =
         /& decimal_of_integer (array_length membres_)
     with EmptyError -> raise NoValueProvided
   in
+  let codirection_hors_universitaire_ : bool =
+    try
+      try codirection_hors_universitaire_ ()
+      with EmptyError -> (
+        try
+          if
+            array_length (array_filter (fun (membre_ : _) -> membre_.directeur_de_these) membres_)
+            = integer_of_string "3"
+            && array_length
+                 (array_filter
+                    (fun (membre_ : _) ->
+                      membre_.directeur_de_these && membre_.hors_monde_universitaire)
+                    membres_)
+               = integer_of_string "1"
+            && array_length
+                 (array_filter
+                    (fun (membre_ : _) ->
+                      membre_.directeur_de_these && membre_.habilitation_a_diriger_recherches)
+                    membres_)
+               = integer_of_string "2"
+          then true
+          else raise EmptyError
+        with EmptyError -> false)
+    with EmptyError -> raise NoValueProvided
+  in
   let parite_ok_ : bool =
     try
       try parite_ok_ ()
@@ -151,12 +203,130 @@ let validation_jury (validation_jury_in : validation_jury_in) =
         with EmptyError -> false)
     with EmptyError -> raise NoValueProvided
   in
+  let rapporteurs_externes_ok_ : bool =
+    try
+      try rapporteurs_externes_ok_ ()
+      with EmptyError ->
+        handle_default
+          [|
+            (fun (_ : _) ->
+              if
+                codirection_hors_universitaire_
+                && array_length
+                     (array_filter
+                        (fun (membre_ : _) ->
+                          membre_.rapporteur && membre_.habilitation_a_diriger_recherches
+                          && membre_.externe)
+                        membres_)
+                   = integer_of_string "2"
+              then true
+              else raise EmptyError);
+            (fun (_ : _) ->
+              if
+                array_length (array_filter (fun (membre_ : _) -> membre_.rapporteur) membres_)
+                = integer_of_string "2"
+                && array_length
+                     (array_filter
+                        (fun (membre_ : _) -> membre_.rapporteur && membre_.externe)
+                        membres_)
+                   = integer_of_string "2"
+              then true
+              else raise EmptyError);
+            (fun (_ : _) ->
+              if impossible_trouver_rapporteurs_externes_ then true else raise EmptyError);
+          |]
+          (fun (_ : _) -> true)
+          (fun (_ : _) -> false)
+    with EmptyError -> raise NoValueProvided
+  in
+  let rapporteurs_nombre_ok_ : bool =
+    try
+      try rapporteurs_nombre_ok_ ()
+      with EmptyError ->
+        handle_default
+          [|
+            (fun (_ : _) ->
+              if
+                codirection_hors_universitaire_
+                && array_length (array_filter (fun (membre_ : _) -> membre_.rapporteur) membres_)
+                   = integer_of_string "3"
+                && array_length
+                     (array_filter
+                        (fun (membre_ : _) ->
+                          membre_.rapporteur && membre_.habilitation_a_diriger_recherches)
+                        membres_)
+                   = integer_of_string "2"
+                && array_length
+                     (array_filter
+                        (fun (membre_ : _) ->
+                          membre_.rapporteur && membre_.hors_monde_universitaire)
+                        membres_)
+                   = integer_of_string "1"
+              then true
+              else raise EmptyError);
+            (fun (_ : _) ->
+              if
+                array_length (array_filter (fun (membre_ : _) -> membre_.rapporteur) membres_)
+                = integer_of_string "2"
+                && array_length
+                     (array_filter
+                        (fun (membre_ : _) ->
+                          membre_.rapporteur && membre_.habilitation_a_diriger_recherches)
+                        membres_)
+                   = integer_of_string "2"
+              then true
+              else raise EmptyError);
+          |]
+          (fun (_ : _) -> true)
+          (fun (_ : _) -> false)
+    with EmptyError -> raise NoValueProvided
+  in
+  let directeurs_ok_ : bool =
+    try
+      try directeurs_ok_ ()
+      with EmptyError ->
+        handle_default
+          [|
+            (fun (_ : _) -> if codirection_hors_universitaire_ then true else raise EmptyError);
+            (fun (_ : _) ->
+              if
+                array_length
+                  (array_filter (fun (membre_ : _) -> membre_.directeur_de_these) membres_)
+                = integer_of_string "2"
+                && array_length
+                     (array_filter
+                        (fun (membre_ : _) ->
+                          membre_.directeur_de_these && membre_.habilitation_a_diriger_recherches)
+                        membres_)
+                   = integer_of_string "2"
+              then true
+              else raise EmptyError);
+            (fun (_ : _) ->
+              if
+                array_length
+                  (array_filter (fun (membre_ : _) -> membre_.directeur_de_these) membres_)
+                = integer_of_string "1"
+                && array_length
+                     (array_filter
+                        (fun (membre_ : _) ->
+                          membre_.directeur_de_these && membre_.habilitation_a_diriger_recherches)
+                        membres_)
+                   = integer_of_string "1"
+              then true
+              else raise EmptyError);
+          |]
+          (fun (_ : _) -> true)
+          (fun (_ : _) -> false)
+    with EmptyError -> raise NoValueProvided
+  in
   let tout_ok_ : bool =
     try
       try tout_ok_ ()
       with EmptyError -> (
         try
-          if nombre_membres_ok_ && parite_ok_ && president_ok_ && externes_ok_ && professeurs_ok_
+          if
+            nombre_membres_ok_ && parite_ok_ && president_ok_ && externes_ok_ && professeurs_ok_
+            && directeurs_ok_ && rapporteurs_nombre_ok_ && rapporteurs_externes_ok_
           then true
           else raise EmptyError
         with EmptyError -> false)
@@ -165,11 +335,16 @@ let validation_jury (validation_jury_in : validation_jury_in) =
   {
     membres_out = membres_;
     parite_minimale_representation_equilibree_out = parite_minimale_representation_equilibree_;
+    codirection_hors_universitaire_out = codirection_hors_universitaire_;
+    impossible_trouver_rapporteurs_externes_out = impossible_trouver_rapporteurs_externes_;
     ratio_femmes_hommes_out = ratio_femmes_hommes_;
     nombre_membres_ok_out = nombre_membres_ok_;
     parite_ok_out = parite_ok_;
     professeurs_ok_out = professeurs_ok_;
     president_ok_out = president_ok_;
     externes_ok_out = externes_ok_;
+    directeurs_ok_out = directeurs_ok_;
+    rapporteurs_nombre_ok_out = rapporteurs_nombre_ok_;
+    rapporteurs_externes_ok_out = rapporteurs_externes_ok_;
     tout_ok_out = tout_ok_;
   }

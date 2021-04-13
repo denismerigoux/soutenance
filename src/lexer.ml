@@ -23,6 +23,10 @@ let rec lex_jury (lexbuf : lexbuf) : token =
   | "Hors du jury :" -> CANDIDATS
   | "homme" -> HOMME
   | "femme" -> FEMME
+  | "direct", ("eur" | "rice") -> DIRECTEUR
+  | "rapport", ("eur" | "euse") -> RAPPORTEUR
+  | "habilitation" -> HABILITATION
+  | "non-universitaire" -> NONUNIVERSITAIRE
   | "professeur", Opt 'e' -> PROFESSEUR
   | "pr", 0xE9, "sident", Opt 'e' -> PRESIDENT
   | "externe" -> EXTERNE

@@ -20,6 +20,14 @@ let position_to_string (pos : position) : string =
     e.Lexing.pos_lnum
     (e.Lexing.pos_cnum - e.Lexing.pos_bol + 1)
 
-type attribut_jury = Professeur | Externe | Sexe of Source_loi.sexe | President
+type attribut_jury =
+  | Professeur
+  | Externe
+  | Sexe of Source_loi.sexe
+  | President
+  | Directeur
+  | Rapporteur
+  | Habilitation
+  | NonUniversitaire
 
 type membre_jury = { nom : string; attributs : attribut_jury list }

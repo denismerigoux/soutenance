@@ -25,6 +25,13 @@ let parite_minimale =
           "Minimal ratio of men or women in the comittee below which there is inbalance (default \
            0.25)")
 
+let impossible_rapporteurs_externes =
+  Arg.(
+    value & flag
+    & info
+        [ "impossible_external_referees"; "O" ]
+        ~doc:"Use this option if it was impossible to find external referees for your committee")
+
 let version = "1.0.0"
 
 let info =
@@ -43,7 +50,7 @@ let info =
   let exits = Term.default_exits @ [ Term.exit_info ~doc:"on error." (-1) ] in
   Term.info "soutenance" ~version ~doc ~exits ~man
 
-let soutenance_t f = Term.(const f $ parite_minimale $ file)
+let soutenance_t f = Term.(const f $ impossible_rapporteurs_externes $ parite_minimale $ file)
 
 exception Error of string * Ast.position option
 

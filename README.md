@@ -4,10 +4,21 @@ Voici un utilitaire pour faciliter les diverses vérifications à faire
 lorsque l'on veut que sa soutenance soit conforme aux réglementations en
 vigueur.
 
-## Utilisation
+## Description
 
 Premièrement, décrivez votre jury de thèse selon le modèle du fichier
 `tests/jury.md`.
+
+Voici la liste des qualifications disponibles pour chaque membre du jury:
+
+- `homme`/`femme` : genre, nécessaire pour calculer l'équilibre homme/femme
+- `professeur`/`professeure` : titulaire dans un corps de professeurs des universités, directeurs de recherche ou grade équivalent pour des institutions étrangères
+- `président`/`présidente` : présidence du jury de thèse
+- `habilitation` : titulaire de l'habilitation à diriger les recherches ou équivalent pour les personnes étrangères
+- `externe` : personne extérieure à l'établissement d'inscription et à l'école doctorale du candidat
+- `rapporteur`/`rapporteuse` : rapporteurs de thèse
+
+## Vérification
 
 Ensuite, exécutez `dist/soutenance.js` sur le fichier qui décrit votre
 jury de thèse. Par exemple,

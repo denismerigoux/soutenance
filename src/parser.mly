@@ -17,6 +17,7 @@
 
 %token <string> NOM
 %token PROFESSEUR EXTERNE HOMME FEMME PRESIDENT START COLON CANDIDATS
+%token DIRECTEUR RAPPORTEUR HABILITATION NONUNIVERSITAIRE
 %token EOF
 
 %start jury_file
@@ -33,6 +34,10 @@ jury_attribute:
 | EXTERNE { Externe }
 | PROFESSEUR { Professeur }
 | PRESIDENT { President }
+| DIRECTEUR { Directeur }
+| RAPPORTEUR { Rapporteur }
+| HABILITATION { Habilitation }
+| NONUNIVERSITAIRE { NonUniversitaire }
 | s = sexe { Sexe s }
 
 jury_line:
