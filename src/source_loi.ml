@@ -17,21 +17,25 @@ type membre_du_jury = {
 type validation_jury_out = {
   membres_out : membre_du_jury array;
   parite_minimale_representation_equilibree_out : decimal;
+  ratio_femmes_hommes_out : decimal;
   nombre_membres_ok_out : bool;
   parite_ok_out : bool;
   professeurs_ok_out : bool;
   president_ok_out : bool;
   externes_ok_out : bool;
+  tout_ok_out : bool;
 }
 
 type validation_jury_in = {
   membres_in : unit -> membre_du_jury array;
   parite_minimale_representation_equilibree_in : unit -> decimal;
+  ratio_femmes_hommes_in : unit -> decimal;
   nombre_membres_ok_in : unit -> bool;
   parite_ok_in : unit -> bool;
   professeurs_ok_in : unit -> bool;
   president_ok_in : unit -> bool;
   externes_ok_in : unit -> bool;
+  tout_ok_in : unit -> bool;
 }
 
 let validation_jury (validation_jury_in : validation_jury_in) =
@@ -39,22 +43,35 @@ let validation_jury (validation_jury_in : validation_jury_in) =
   let parite_minimale_representation_equilibree_ : unit -> decimal =
     validation_jury_in.parite_minimale_representation_equilibree_in
   in
+  let ratio_femmes_hommes_ : unit -> decimal = validation_jury_in.ratio_femmes_hommes_in in
   let nombre_membres_ok_ : unit -> bool = validation_jury_in.nombre_membres_ok_in in
   let parite_ok_ : unit -> bool = validation_jury_in.parite_ok_in in
   let professeurs_ok_ : unit -> bool = validation_jury_in.professeurs_ok_in in
   let president_ok_ : unit -> bool = validation_jury_in.president_ok_in in
   let externes_ok_ : unit -> bool = validation_jury_in.externes_ok_in in
+  let tout_ok_ : unit -> bool = validation_jury_in.tout_ok_in in
   let membres_ : membre_du_jury array =
     try membres_ () with EmptyError -> raise NoValueProvided
   in
   let parite_minimale_representation_equilibree_ : decimal =
     try parite_minimale_representation_equilibree_ () with EmptyError -> raise NoValueProvided
   in
-  let parite_ok_ : bool =
-    try try parite_ok_ () with EmptyError -> false with EmptyError -> raise NoValueProvided
-  in
-  let professeurs_ok_ : bool =
-    try try professeurs_ok_ () with EmptyError -> false with EmptyError -> raise NoValueProvided
+  let externes_ok_ : bool =
+    try
+      try externes_ok_ ()
+      with EmptyError -> (
+        try
+          if
+            Array.fold_left
+              (fun (acc_ : integer) (membre_ : _) ->
+                if membre_.externe then acc_ +! integer_of_string "1" else acc_)
+              (integer_of_string "0") membres_
+            *! integer_of_string "2"
+            >=! array_length membres_
+          then true
+          else raise EmptyError
+        with EmptyError -> false)
+    with EmptyError -> raise NoValueProvided
   in
   let president_ok_ : bool =
     try
@@ -76,6 +93,23 @@ let validation_jury (validation_jury_in : validation_jury_in) =
         with EmptyError -> false)
     with EmptyError -> raise NoValueProvided
   in
+  let professeurs_ok_ : bool =
+    try
+      try professeurs_ok_ ()
+      with EmptyError -> (
+        try
+          if
+            Array.fold_left
+              (fun (acc_ : integer) (membre_ : _) ->
+                if membre_.professeur then acc_ +! integer_of_string "1" else acc_)
+              (integer_of_string "0") membres_
+            *! integer_of_string "2"
+            >=! array_length membres_
+          then true
+          else raise EmptyError
+        with EmptyError -> false)
+    with EmptyError -> raise NoValueProvided
+  in
   let nombre_membres_ok_ : bool =
     try
       try nombre_membres_ok_ ()
@@ -89,54 +123,53 @@ let validation_jury (validation_jury_in : validation_jury_in) =
         with EmptyError -> false)
     with EmptyError -> raise NoValueProvided
   in
-  let externes_ok_ : bool =
+  let ratio_femmes_hommes_ : decimal =
     try
-      try externes_ok_ ()
+      try ratio_femmes_hommes_ ()
       with EmptyError ->
-        handle_default
-          [|
-            (fun (_ : _) ->
-              if
-                Array.fold_left
-                  (fun (acc_ : integer) (membre_ : _) ->
-                    if membre_.professeur then acc_ +! integer_of_string "1" else acc_)
-                  (integer_of_string "0") membres_
-                >=! array_length membres_ /! integer_of_string "2"
-              then true
-              else raise EmptyError);
-            (fun (_ : _) ->
-              if
-                decimal_of_integer
-                  (Array.fold_left
-                     (fun (acc_ : integer) (membre_ : _) ->
-                       if match membre_.sexe with Femme _ -> true | Homme _ -> false then
-                         acc_ +! integer_of_string "1"
-                       else acc_)
-                     (integer_of_string "0") membres_)
-                >=& decimal_of_integer (array_length membres_)
-                    *& parite_minimale_representation_equilibree_
-              then true
-              else raise EmptyError);
-            (fun (_ : _) ->
-              if
-                Array.fold_left
-                  (fun (acc_ : integer) (membre_ : _) ->
-                    if membre_.externe then acc_ +! integer_of_string "1" else acc_)
-                  (integer_of_string "0") membres_
-                >=! array_length membres_ /! integer_of_string "2"
-              then true
-              else raise EmptyError);
-          |]
-          (fun (_ : _) -> true)
-          (fun (_ : _) -> false)
+        decimal_of_integer
+          (Array.fold_left
+             (fun (acc_ : integer) (membre_ : _) ->
+               if match membre_.sexe with Femme _ -> true | Homme _ -> false then
+                 acc_ +! integer_of_string "1"
+               else acc_)
+             (integer_of_string "0") membres_)
+        /& decimal_of_integer (array_length membres_)
+    with EmptyError -> raise NoValueProvided
+  in
+  let parite_ok_ : bool =
+    try
+      try parite_ok_ ()
+      with EmptyError -> (
+        try
+          if
+            ratio_femmes_hommes_ >=& parite_minimale_representation_equilibree_
+            && ratio_femmes_hommes_
+               <=& decimal_of_string "1." -& parite_minimale_representation_equilibree_
+          then true
+          else raise EmptyError
+        with EmptyError -> false)
+    with EmptyError -> raise NoValueProvided
+  in
+  let tout_ok_ : bool =
+    try
+      try tout_ok_ ()
+      with EmptyError -> (
+        try
+          if nombre_membres_ok_ && parite_ok_ && president_ok_ && externes_ok_ && professeurs_ok_
+          then true
+          else raise EmptyError
+        with EmptyError -> false)
     with EmptyError -> raise NoValueProvided
   in
   {
     membres_out = membres_;
     parite_minimale_representation_equilibree_out = parite_minimale_representation_equilibree_;
+    ratio_femmes_hommes_out = ratio_femmes_hommes_;
     nombre_membres_ok_out = nombre_membres_ok_;
     parite_ok_out = parite_ok_;
     professeurs_ok_out = professeurs_ok_;
     president_ok_out = president_ok_;
     externes_ok_out = externes_ok_;
+    tout_ok_out = tout_ok_;
   }

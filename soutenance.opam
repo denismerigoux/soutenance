@@ -9,7 +9,11 @@ homepage: "https://github.com/denismerigoux/soutenance"
 bug-reports: "https://github.com/denismerigoux/soutenance/issues"
 depends: [
   "dune" {>= "2.8"}
-  "menhir" {>= "20200211"}
+  "menhir" {>= "20210310"}
+  "menhirLib" {>= "20210310"}
+  "cmdliner" {>= "1.0.4"}
+  "sedlex" {>= "2.3"}
+  "ANSITerminal" {>= "0.8.2"}
   "odoc" {with-doc}
 ]
 build: [

@@ -1,6 +1,5 @@
 ## Arrêté du 25 mai 2016 fixant le cadre national de la formation et les modalités conduisant à la délivrance du diplôme national de doctorat
 
-
 > Début métadonnées
 ```catala
 déclaration énumération Sexe :
@@ -17,11 +16,13 @@ déclaration structure MembreDuJury :
 déclaration champ d'application ValidationJury :
   contexte membres contenu collection MembreDuJury
   contexte parité_minimale_représentation_équilibrée contenu décimal
+  contexte ratio_femmes_hommes contenu décimal
   contexte nombre_membres_ok condition
   contexte parité_ok condition
   contexte professeurs_ok condition
   contexte président_ok condition
   contexte externes_ok condition
+  contexte tout_ok condition
 ```
 >Fin métadonnées
 
@@ -48,7 +49,7 @@ de thèse définies au titre III du présent arrêté.
 ```catala
 champ d'application ValidationJury :
   règle externes_ok sous condition
-    nombre pour membre dans membres de membre.externe >= nombre de membres / 2
+    nombre pour membre dans membres de membre.externe * 2 >= nombre de membres
   conséquence rempli
 ```
 
@@ -57,9 +58,13 @@ des hommes.
 
 ```catala
 champ d'application ValidationJury :
-  règle externes_ok sous condition
-    entier_vers_décimal de (nombre pour membre dans membres de (membre.sexe sous forme Femme)) >=.
-      entier_vers_décimal de (nombre de membres) *. parité_minimale_représentation_équilibrée
+  définition ratio_femmes_hommes égal à
+    entier_vers_décimal de (nombre pour membre dans membres de (membre.sexe sous forme Femme)) /.
+     entier_vers_décimal de (nombre de membres)
+
+  règle parité_ok sous condition
+    ratio_femmes_hommes >=. parité_minimale_représentation_équilibrée et
+    ratio_femmes_hommes <=. 1,0 -. parité_minimale_représentation_équilibrée
   conséquence rempli
 ```
 
@@ -72,8 +77,8 @@ pas du ministère chargé de l'enseignement supérieur.
 
 ```catala
 champ d'application ValidationJury :
-  règle externes_ok sous condition
-    nombre pour membre dans membres de membre.professeur >= nombre de membres / 2
+  règle professeurs_ok sous condition
+    nombre pour membre dans membres de membre.professeur * 2 >= nombre de membres
   conséquence rempli
 ```
 
@@ -94,3 +99,10 @@ Lorsque plusieurs établissements sont accrédités à délivrer conjointement l
 doctorat, le jury est désigné par les chefs des établissements concernés dans
 les conditions fixées par la convention mentionnée à l'article 5 du présent
 arrêté.
+
+```catala
+champ d'application ValidationJury:
+  règle tout_ok sous condition
+    nombre_membres_ok et parité_ok et président_ok et externes_ok et professeurs_ok
+  conséquence rempli
+```

@@ -18,7 +18,11 @@
  (name soutenance)
  (synopsis "Compose your PhD defence committee in accordance with French law")
  (depends
-   (menhir (>= 20200211))
+   (menhir (>= 20210310))
+   (menhirLib (>= 20210310))
+   (cmdliner (>= 1.0.4))
+   (sedlex (>= 2.3))
+   (ANSITerminal (>= 0.8.2))
  )
 )
 (using menhir 2.1)
