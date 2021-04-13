@@ -21,3 +21,4 @@
    (menhir (>= 20200211))
  )
 )
+(using menhir 2.1)
