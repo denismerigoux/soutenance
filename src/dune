@@ -1,6 +1,6 @@
 (executable
  (public_name soutenance)
- (libraries catala cmdliner menhirLib ANSITerminal)
+ (libraries catala.runtime cmdliner menhirLib ANSITerminal)
  (preprocess
   (pps sedlex.ppx))
  (modes native js))
