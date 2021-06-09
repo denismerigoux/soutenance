@@ -8,7 +8,10 @@ build: src/source_loi.ml format
 	dune build src/soutenance.exe
 
 test: build
-	dune exec src/soutenance.exe -- tests/jury.md -p 0.3
+	dune exec src/soutenance.exe -- tests/denis.md
+
+denis:
+	node dist/soutenance.js tests/denis.md
 
 INSTALL_DIR=dist
 
