@@ -8,7 +8,9 @@
 - **Nikhil Swamy** : homme externe
 - **Jacques-Henry Jourdan**: homme externe
 - **Delphine Demange**: femme externe
+
   Hors du jury :
+
 - **Véronique Benzakem**: femme professeure habilitation externe
 - **Catherine Dubois**: femme professeure habilitation externe
 - **Manuel Barbosa**: homme externe
