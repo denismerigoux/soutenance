@@ -3,14 +3,16 @@
 - **Karthikeyan Bhargavan** : homme professeur habilitation directeur
 - **Jonathan Protzenko** : homme
 - **Bas Spitters**: homme professeur habilitation externe rapporteur
-- **Évelyne Contejean**: femme professeure habilitation externe rapporteuse
+- **Évelyne Contejean**: femme professeure habilitation externe
 - **Xavier Leroy**: homme professeur habilitation président
-- **Nikhil Swamy** : homme externe
-- **Jacques-Henry Jourdan**: homme externe
+- **Derek Dreyer**: homme professeur habilitation externe rapporteur
+- **Sarah Lawsky**: femme professeure habilitation externe
 - **Delphine Demange**: femme externe
 
   Hors du jury :
 
+- **Jacques-Henry Jourdan**: homme externe
+- **Nikhil Swamy** : homme externe
 - **Véronique Benzakem**: femme professeure habilitation externe
 - **Catherine Dubois**: femme professeure habilitation externe
 - **Manuel Barbosa**: homme externe
