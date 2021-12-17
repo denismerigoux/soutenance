@@ -12,6 +12,7 @@ Premièrement, décrivez votre jury de thèse selon le modèle du fichier
 Voici la liste des qualifications disponibles pour chaque membre du jury:
 
 - `homme`/`femme` : genre, nécessaire pour calculer l'équilibre homme/femme
+- `directeur`/`directrice` : cette personne est directeur/directrice de cette thèse
 - `professeur`/`professeure` : titulaire dans un corps de professeurs des universités, directeurs de recherche ou grade équivalent pour des institutions étrangères
 - `président`/`présidente` : présidence du jury de thèse
 - `habilitation` : titulaire de l'habilitation à diriger les recherches ou équivalent pour les personnes étrangères
